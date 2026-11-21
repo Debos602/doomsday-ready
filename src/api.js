@@ -4,10 +4,12 @@ const BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 async function request(path, options = {}) {
   let res;
   try {
+    // Only send Content-Type when there is a body, so plain GETs stay "simple" cross-origin requests (no CORS preflight).
+    const hasBody = options.body !== undefined;
     res = await fetch(`${BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json' },
       ...options,
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      headers: hasBody ? { 'Content-Type': 'application/json' } : {},
+      body: hasBody ? JSON.stringify(options.body) : undefined,
     });
   } catch {
     throw Object.assign(new Error('Cannot reach the server. Is the API running?'), { code: 'NETWORK_ERROR' });
@@ -38,12 +40,3 @@ export function formatMinutes(total) {
   if (h === 0) return `${m}m`;
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
-
-
-
-
-
-
-
-
-
